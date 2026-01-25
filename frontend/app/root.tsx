@@ -9,6 +9,15 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { AuthProvider } from "react-oidc-context";
+
+const cognitoAuthConfig = {
+  authority: "https://cognito-idp.eu-west-3.amazonaws.com/eu-west-3_zHBKPD007",
+  client_id: "45m7afoaohlsa2mua0c62opgju",
+  redirect_uri: "http://hprod.xyz.s3-website.eu-west-3.amazonaws.com",
+  response_type: "code",
+  scope: "email openid profile",
+};
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -42,7 +51,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <AuthProvider {...cognitoAuthConfig}>
+      <Outlet />
+    </AuthProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

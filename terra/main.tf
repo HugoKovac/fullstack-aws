@@ -19,10 +19,22 @@ variable "profile" {
   default     = "default"
 }
 
+variable "domain_name" {
+  description = "Name of the S3 bucket"
+  type        = string
+  default     = "hprod.xyz"
+}
+
 variable "bucket_name" {
   description = "Name of the S3 bucket"
   type        = string
   default     = "hprod.xyz"
+}
+
+variable "route53_zone_id" {
+  description = "Hosted Zone ID du domaine"
+  type = string
+  default = "Z0765961Q2G1JKMVFG2T"
 }
 
 provider "aws" {
@@ -116,6 +128,22 @@ resource "random_id" "suffix" {
 resource "aws_cognito_user_pool_domain" "domain" {
   domain       = "hkovac-login-${random_id.suffix.hex}"
   user_pool_id = aws_cognito_user_pool.pool.id
+}
+
+output "cognito_domain" {
+  value = "https://${aws_cognito_user_pool_domain.domain.domain}.auth.${var.region}.amazoncognito.com"
+}
+
+output "cognito_client_id" {
+  value = aws_cognito_user_pool_client.client.id
+}
+
+output "cognito_user_pool_id" {
+  value = aws_cognito_user_pool.pool.id
+}
+
+output "vite_env_file" {
+  value = "VITE_COGNITO_DOMAIN=\"https://${aws_cognito_user_pool_domain.domain.domain}.auth.${var.region}.amazoncognito.com\"\nVITE_COGNITO_CLIENT_ID=\"${aws_cognito_user_pool_client.client.id}\"\nVITE_COGNITO_LOGOUT_URI=\"logout\"\nVITE_COGNITO_AUTHORITY=\"https://cognito-idp.${var.region}.amazonaws.com/${aws_cognito_user_pool.pool.id}\""
 }
 
 
@@ -230,3 +258,41 @@ output "bucket_domain_name" {
   description = "URL of the deployed React app"
   value       = "http://${var.bucket_name}.s3-website.${var.region}.amazonaws.com"
 }
+
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+  profile = "${var.profile}"
+}
+
+resource "aws_acm_certificate" "cert" {
+  provider          = aws.us_east_1
+  domain_name       = var.domain_name
+  validation_method = "DNS"
+}
+
+resource "aws_route53_record" "cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.cert.domain_validation_options :
+    dvo.domain_name => {
+      name   = dvo.resource_record_name
+      type   = dvo.resource_record_type
+      record = dvo.resource_record_value
+    }
+  }
+
+  zone_id = var.route53_zone_id
+  name    = each.value.name
+  type    = each.value.type
+  records = [each.value.record]
+  ttl     = 60
+}
+
+resource "aws_acm_certificate_validation" "cert_validation" {
+  provider                = aws.us_east_1
+  certificate_arn         = aws_acm_certificate.cert.arn
+  validation_record_fqdns = [for r in aws_route53_record.cert_validation : r.fqdn]
+}
+
+
+

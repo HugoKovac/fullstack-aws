@@ -12,9 +12,9 @@ import "./app.css";
 import { AuthProvider } from "react-oidc-context";
 
 const cognitoAuthConfig = {
-  authority: "https://cognito-idp.eu-west-3.amazonaws.com/eu-west-3_zHBKPD007",
-  client_id: "45m7afoaohlsa2mua0c62opgju",
-  redirect_uri: "http://hprod.xyz.s3-website.eu-west-3.amazonaws.com",
+  authority: import.meta.env.VITE_COGNITO_AUTHORITY,
+  client_id: import.meta.env.VITE_COGNITO_CLIENT_ID,
+  redirect_uri: import.meta.env.VITE_COGNITO_DOMAIN,
   response_type: "code",
   scope: "email openid profile",
 };
@@ -69,7 +69,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       error.status === 404
         ? "The requested page could not be found."
         : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
+  } else if (import.meta.env.VITE_DEV && error && error instanceof Error) {
     details = error.message;
     stack = error.stack;
   }

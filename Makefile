@@ -12,6 +12,36 @@ all: tf_apply
 tf_apply: $(BOOTSTRAP)
 	$(TF) -chdir=terra apply
 
+tf_apply_frontend: $(BOOTSTRAP)
+	$(TF) -chdir=terra apply -target=module.frontend
+
+tf_apply_backend: $(BOOTSTRAP)
+	$(TF) -chdir=terra apply -target=module.backend
+
+tf_apply_domains: $(BOOTSTRAP)
+	$(TF) -chdir=terra apply -target=module.domains
+
+tf_destroy_frontend:
+	$(TF) -chdir=terra destroy -target=module.frontend
+
+tf_destroy_backend:
+	$(TF) -chdir=terra destroy -target=module.backend
+
+tf_destroy_domains:
+	$(TF) -chdir=terra destroy -target=module.domains
+
+tf_plan:
+	$(TF) -chdir=terra plan
+
+tf_plan_frontend:
+	$(TF) -chdir=terra plan -target=module.frontend
+
+tf_plan_backend:
+	$(TF) -chdir=terra plan -target=module.backend
+
+tf_plan_domains:
+	$(TF) -chdir=terra plan -target=module.domains
+
 $(BOOTSTRAP): $(SRC_MAKEFILE)
 	cd src && $(MAKE)
 
@@ -32,4 +62,7 @@ clean:
 	$(TF) -chdir=terra destroy
 	cd src && $(MAKE) clean
 
-.PHONY: all tf_apply lb_ls lb_create lb_delete lb_invoke
+.PHONY: all tf_apply tf_apply_frontend tf_apply_backend tf_apply_domains \
+        tf_destroy_frontend tf_destroy_backend tf_destroy_domains \
+        tf_plan tf_plan_frontend tf_plan_backend tf_plan_domains \
+        lb_ls lb_create lb_delete lb_invoke clean

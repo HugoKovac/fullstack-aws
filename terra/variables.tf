@@ -1,0 +1,29 @@
+variable "region" {
+  description = "AWS region"
+  type        = string
+  default     = "eu-west-3"
+}
+
+variable "profile" {
+  description = "AWS profile name"
+  type        = string
+  default     = "default"
+}
+
+variable "domain_name" {
+  description = "Name of the S3 bucket"
+  type        = string
+  default     = "hprod.xyz"
+}
+
+variable "bucket_name" {
+  description = "Name of the S3 bucket"
+  type        = string
+  default     = "hprod.xyz"
+}
+
+variable "route53_zone_id" {
+  description = "Hosted Zone ID du domaine"
+  type        = string
+  default     = "Z0765961Q2G1JKMVFG2T"
+}

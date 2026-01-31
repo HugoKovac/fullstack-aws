@@ -1,5 +1,4 @@
 SRC_MAKEFILE=src/Makefile
-BOOTSTRAP=src/bootstrap
 
 # AWS_PROFILE=localstack
 AWS_PROFILE=default
@@ -9,16 +8,16 @@ TF=terraform
 
 all: tf_apply
 
-tf_apply: $(BOOTSTRAP)
+tf_apply: build
 	$(TF) -chdir=terra apply
 
-tf_apply_frontend: $(BOOTSTRAP)
+tf_apply_frontend: build
 	$(TF) -chdir=terra apply -target=module.frontend
 
-tf_apply_backend: $(BOOTSTRAP)
+tf_apply_backend: build
 	$(TF) -chdir=terra apply -target=module.backend
 
-tf_apply_domains: $(BOOTSTRAP)
+tf_apply_domains: build
 	$(TF) -chdir=terra apply -target=module.domains
 
 tf_destroy_frontend:
@@ -42,7 +41,7 @@ tf_plan_backend:
 tf_plan_domains:
 	$(TF) -chdir=terra plan -target=module.domains
 
-$(BOOTSTRAP): $(SRC_MAKEFILE)
+build: $(SRC_MAKEFILE)
 	cd src && $(MAKE)
 
 
@@ -65,4 +64,4 @@ clean:
 .PHONY: all tf_apply tf_apply_frontend tf_apply_backend tf_apply_domains \
         tf_destroy_frontend tf_destroy_backend tf_destroy_domains \
         tf_plan tf_plan_frontend tf_plan_backend tf_plan_domains \
-        lb_ls lb_create lb_delete lb_invoke clean
+        lb_ls lb_create lb_delete lb_invoke clean build

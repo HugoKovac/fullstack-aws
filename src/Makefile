@@ -1,12 +1,21 @@
-all: test_lambda.zip
+FUNCTIONS := $(shell find ports/inbound -maxdepth 1 -mindepth 1 -type d)
 
-bootstrap: main.go
-	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -tags lambda.norpc -o bootstrap main.go
+all: build
 
-test_lambda.zip: bootstrap
-	zip test_lambda.zip bootstrap
+build:
+	@for dir in $(FUNCTIONS); do \
+		echo "Building function $$dir"; \
+		GOOS=linux GOARCH=arm64 CGO_ENABLED=0 \
+		go build -tags lambda.norpc -o $$dir/bootstrap $$dir/main.go; \
+	done
 
 clean:
-	rm -f test_lambda.zip bootstrap
+	rm -f ports/inbound/*/bootstrap
 
-.PHONY: clean
+local_api:
+	sam local start-api
+
+local_invoke:
+	sam local invoke HelloFunction
+
+.PHONY: build clean local_api

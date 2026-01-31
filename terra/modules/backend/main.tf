@@ -20,15 +20,41 @@ resource "aws_iam_role" "go_lambda_role" {
 }
 
 # Lambda Function
+
+locals {
+  # Find all bootstrap files
+  bootstrap_files = [
+    for p in fileset(var.functions_path, "**/bootstrap") :
+    p
+  ]
+
+  # Extract the parent directory of each bootstrap file
+  bootstrap_dirs = [
+    for f in local.bootstrap_files :
+    dirname(f)
+  ]
+}
+
+
+data "archive_file" "lambda_zip" {
+  for_each    = toset(local.bootstrap_dirs)
+  type        = "zip"
+  source_dir  = "${var.functions_path}/${each.key}"
+  output_path = "${path.module}/dist/${basename(each.key)}.zip"
+}
+
+
 resource "aws_lambda_function" "lambda" {
-  filename      = var.lambda_zip_path
-  function_name = var.lambda_function_name
-  role          = aws_iam_role.go_lambda_role.arn
+  for_each = data.archive_file.lambda_zip
+
+  function_name    = each.key
+  filename         = each.value.output_path
+  source_code_hash = each.value.output_base64sha256
+
   handler       = var.lambda_handler
   runtime       = var.lambda_runtime
   architectures = var.lambda_architectures
-  memory_size   = var.lambda_memory_size
-  timeout       = var.lambda_timeout
+  role          = aws_iam_role.go_lambda_role.arn
 }
 
 # API Gateway
@@ -57,25 +83,30 @@ resource "aws_apigatewayv2_stage" "stage" {
 }
 
 resource "aws_apigatewayv2_integration" "integration" {
-  api_id = aws_apigatewayv2_api.api.id
+  for_each = aws_lambda_function.lambda
 
-  integration_uri    = aws_lambda_function.lambda.invoke_arn
+  api_id             = aws_apigatewayv2_api.api.id
   integration_type   = "AWS_PROXY"
   integration_method = "POST"
+  integration_uri    = each.value.invoke_arn
 }
 
 resource "aws_apigatewayv2_route" "endpoint" {
+  for_each = aws_apigatewayv2_integration.integration
+
   api_id             = aws_apigatewayv2_api.api.id
-  route_key          = "GET /"
-  target             = "integrations/${aws_apigatewayv2_integration.integration.id}"
+  route_key          = "GET /${each.key}"
+  target             = "integrations/${each.value.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.auth.id
 }
 
 resource "aws_lambda_permission" "permission" {
-  statement_id  = "AllowExecutionFromAPIGateway"
+  for_each = aws_lambda_function.lambda
+
+  statement_id  = "AllowExecutionFromAPIGateway-${each.key}"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda.function_name
+  function_name = each.value.function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_apigatewayv2_api.api.execution_arn}/*/*"

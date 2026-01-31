@@ -10,6 +10,11 @@ variable "lambda_zip_path" {
   default     = "../src/test_lambda.zip"
 }
 
+variable "functions_path" {
+  type    = string
+  default = "../src/ports/inbound"
+}
+
 variable "lambda_function_name" {
   description = "Name of the Lambda function"
   type        = string

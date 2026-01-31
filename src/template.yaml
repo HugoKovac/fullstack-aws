@@ -1,0 +1,27 @@
+Resources:
+
+  HelloFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: bootstrap
+      CodeUri: ./ports/inbound/hello
+      Runtime: provided.al2
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: GET
+
+  GoodbyeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: bootstrap
+      CodeUri: ./ports/inbound/goodbye
+      Runtime: provided.al2
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /goodbye
+            Method: GET

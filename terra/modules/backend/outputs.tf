@@ -1,12 +1,23 @@
-output "lambda_function_arn" {
-  value       = aws_lambda_function.lambda.arn
-  description = "ARN of the Lambda function"
+output "function_path" {
+  value = var.functions_path
 }
 
-output "lambda_function_name" {
-  value       = aws_lambda_function.lambda.function_name
-  description = "Name of the Lambda function"
+
+output "bootstrap_dirs" {
+  value = local.bootstrap_dirs
 }
+
+
+output "lambda_function_arn" {
+  value       = { for k, fn in aws_lambda_function.lambda : k => fn.arn }
+  description = "ARNs of all Lambda functions"
+}
+
+output "lambda_function_names" {
+  value       = { for k, fn in aws_lambda_function.lambda : k => fn.function_name }
+  description = "Names of all Lambda functions"
+}
+
 
 output "api_gateway_id" {
   value       = aws_apigatewayv2_api.api.id

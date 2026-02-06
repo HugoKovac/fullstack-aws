@@ -16,31 +16,31 @@ variable "region" {
 variable "cognito_pool_name" {
   description = "Name of the Cognito user pool"
   type        = string
-  default     = "example_user_pool"
+  default     = "hprod_user_pool"
 }
 
 variable "cognito_client_name" {
   description = "Name of the Cognito user pool client"
   type        = string
-  default     = "example_external_api"
+  default     = "hprod_external_api"
 }
 
 variable "cognito_domain_prefix" {
   description = "Domain prefix for Cognito"
   type        = string
-  default     = "hkovac-login"
+  default     = "hpord-login"
 }
 
 variable "callback_urls" {
   description = "OAuth callback URLs"
   type        = list(string)
-  default     = ["http://localhost:3000/callback"]
+  default     = ["https://hprod.xyz/"]
 }
 
 variable "logout_urls" {
   description = "OAuth logout URLs"
   type        = list(string)
-  default     = ["http://localhost:3000/logout"]
+  default     = ["https://hprod.xyz/"]
 }
 
 variable "bucket_website" {

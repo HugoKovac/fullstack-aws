@@ -13,12 +13,22 @@ terraform {
 # Cognito User Pool
 resource "aws_cognito_user_pool" "pool" {
   name = var.cognito_pool_name
+
+  username_attributes = ["email"]
+
+  verification_message_template {
+    default_email_option = "CONFIRM_WITH_CODE"
+    email_subject        = "Account Confirmation"
+    email_message        = "Your confirmation code is {####}"
+  }
+
+  # this allow the verification message on email
+  auto_verified_attributes = ["email"]
 }
 
 resource "aws_cognito_user_pool_client" "client" {
-  name         = var.cognito_client_name
-  user_pool_id = aws_cognito_user_pool.pool.id
-
+  name            = var.cognito_client_name
+  user_pool_id    = aws_cognito_user_pool.pool.id
   generate_secret = false
 
   allowed_oauth_flows = [
@@ -32,10 +42,8 @@ resource "aws_cognito_user_pool_client" "client" {
   ]
 
   allowed_oauth_flows_user_pool_client = true
-
-  callback_urls = var.callback_urls
-
-  logout_urls = var.logout_urls
+  callback_urls                        = var.callback_urls
+  logout_urls                          = var.logout_urls
 
   explicit_auth_flows = [
     "ALLOW_USER_PASSWORD_AUTH",
@@ -137,6 +145,20 @@ resource "aws_cloudfront_distribution" "cdn" {
     geo_restriction {
       restriction_type = "none"
     }
+  }
+
+  custom_error_response {
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 0
+  }
+
+  custom_error_response {
+    error_code            = 403
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 0
   }
 }
 

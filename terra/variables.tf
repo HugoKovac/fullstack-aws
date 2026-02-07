@@ -27,3 +27,22 @@ variable "route53_zone_id" {
   type        = string
   default     = "Z0765961Q2G1JKMVFG2T"
 }
+
+variable "db_username" {
+  description = "Database admin username"
+  type        = string
+}
+
+variable "db_password" {
+  description = "Database admin password"
+  type        = string
+  sensitive   = true
+}
+
+variable "private_subnets" {
+  description = "Private subnet IDs for RDS"
+  type        = list(string)
+}
+
+
+

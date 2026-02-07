@@ -3,3 +3,4 @@
 bootstrap
 *.zip
 *.idea
+secret.tfvars

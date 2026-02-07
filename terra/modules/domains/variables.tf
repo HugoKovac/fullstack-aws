@@ -28,7 +28,7 @@ variable "cognito_client_name" {
 variable "cognito_domain_prefix" {
   description = "Domain prefix for Cognito"
   type        = string
-  default     = "hpord-login"
+  default     = "hprod-login"
 }
 
 variable "callback_urls" {

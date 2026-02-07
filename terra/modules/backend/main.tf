@@ -111,3 +111,54 @@ resource "aws_lambda_permission" "permission" {
 
   source_arn = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }
+
+# Security group for RDS
+resource "aws_security_group" "rds_sg" {
+  name        = "rds-postgres-sg"
+  description = "Allow Postgres access"
+
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_cidrs
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Subnet group for RDS
+resource "aws_db_subnet_group" "rds_subnet_group" {
+  name       = "rds-subnet-group"
+  subnet_ids = var.private_subnets
+
+  tags = {
+    Name = "rds-subnet-group"
+  }
+}
+
+# RDS PostgreSQL
+resource "aws_db_instance" "postgres" {
+  identifier            = "my-postgres-db"
+  engine                = "postgres"
+  engine_version        = "14"
+  instance_class        = "db.t3.micro"
+  allocated_storage     = 20
+  max_allocated_storage = 20
+
+  username = var.db_username
+  password = var.db_password
+  db_name  = var.db_name
+
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+
+  deletion_protection = false
+  skip_final_snapshot = true
+  publicly_accessible = true
+}

@@ -33,3 +33,16 @@ output "api_endpoint" {
   value       = aws_apigatewayv2_stage.stage.invoke_url
   description = "Invoke URL of the API Gateway stage"
 }
+
+output "rds_endpoint" {
+  value = aws_db_instance.postgres.endpoint
+}
+
+output "rds_username" {
+  value = var.db_username
+}
+
+output "rds_db_name" {
+  value = var.db_name
+}
+

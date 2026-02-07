@@ -78,3 +78,32 @@ variable "cognito_issuer" {
   description = "Cognito issuer URL"
   type        = string
 }
+
+variable "db_username" {
+  description = "Database admin username"
+  type        = string
+}
+
+variable "db_password" {
+  description = "Database admin password"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_name" {
+  description = "Initial database name"
+  type        = string
+  default     = "hprod"
+}
+
+variable "private_subnets" {
+  description = "Private subnet IDs for RDS"
+  type        = list(string)
+}
+
+variable "allowed_cidrs" {
+  type        = list(string)
+  description = "CIDR blocks allowed to access Postgres"
+  default     = ["10.0.0.0/16"]
+}
+
